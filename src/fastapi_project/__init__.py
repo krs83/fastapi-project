@@ -2,6 +2,8 @@ from anyio.functools import lru_cache
 from fastapi import FastAPI
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from src.routers import users_router, health_router, orders_router
+
 
 class Settings(BaseSettings):
     app_name: str = "My API"
@@ -18,10 +20,7 @@ settings = get_settings()
 
 app = FastAPI(title=settings.app_name, version=settings.app_version)
 
-@app.get("/")
-async def root():
-    return {"app": settings.app_name,"version": settings.app_version}
+users_router.include_router(orders_router)
+app.include_router(users_router)
+app.include_router(health_router)
 
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
