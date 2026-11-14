@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException
+
+
+from fastapi import APIRouter, HTTPException, Query
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -6,8 +8,17 @@ users_db = {}
 user_id_counter = 1
 
 @router.get("", status_code=200)
-async def get_users():
-    return list(users_db.values())
+async def get_users(page: int = Query(1, ge=1, description="Page number"),
+                    limit: int = Query(10, ge=1, le=100, description="Page quantity"),):
+    start = (page - 1) * limit
+    end = start + limit
+    users = list(users_db.values())
+    return {
+        "page": page,
+        "limit": limit,
+        "total": len(users),
+        "items": users[start:end]
+    }
 
 @router.get("/{user_id}", status_code=200)
 async def get_user(user_id: int):
